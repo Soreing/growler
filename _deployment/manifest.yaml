@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: growler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: growler
+  template:
+    metadata:
+      labels:
+        app: growler
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+      - name:  growler
+        image: soreing/growler:0.1.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DiscordBaseUrl
+          value: https://discord.com/api/v10
+        - name: DiscordToken
+          valueFrom:
+            secretKeyRef:
+              name: growler-token
+              key: token
+        volumeMounts:
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: growler-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: growler
